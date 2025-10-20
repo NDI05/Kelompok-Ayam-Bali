@@ -1,0 +1,46 @@
+@startuml
+class Customer {
+  +String customerId
+  +String name
+  +String tableNumber
+}
+
+class MenuItem {
+  +String menuId
+  +String name
+  +Double price
+  +String category
+}
+
+class Order {
+  +String orderId
+  +String tableNumber
+  +LocalDateTime orderTime
+  +String status
+  +List<MenuItem> items
+  +Double totalAmount
+  +pay()
+}
+
+class Payment {
+  +String paymentId
+  +String orderId
+  +Double amount
+  +String method
+  +LocalDateTime timestamp
+  +Boolean isSuccessful()
+}
+
+class SalesReport {
+  +String reportId
+  +LocalDate month
+  +List<Order> orders
+  +Double totalRevenue()
+}
+
+' Relasi
+Customer "1" -- "0..*" Order
+Order "1" -- "1" Payment
+Order "1" -- "*" MenuItem
+SalesReport "1" -- "*" Order
+@enduml
