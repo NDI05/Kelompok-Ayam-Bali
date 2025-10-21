@@ -8,62 +8,52 @@ skinparam usecase {
 actor "Pelanggan" as Customer
 actor "Dapur" as Kitchen
 actor "Admin" as Admin
-actor "Sistem Pembayaran Eksternal" as PaymentGateway
 
 rectangle "Sistem Digital Wakrun" {
+  (Login)
   (Lihat Menu Online)
-  (Cari Menu Berdasarkan Kategori)
-  (Lihat Detail Menu)
-  (Input Nomor Meja)
-  (Validasi Nomor Meja)
   (Pesan Makanan)
+  (Input Nomor Meja)
   (Tambah Catatan Khusus)
-  (Terapkan Promo/Voucher)
+  (Terapkan Promo)
   (Hitung Total Pesanan)
-  (Pilih Metode Pembayaran)
   (Bayar Pesanan)
-  (Batalkan Pesanan Sebelum Bayar)
   (Lihat Riwayat Pesanan)
-  (Kirim Notifikasi ke Dapur)
-  (Perbarui Status Pesanan)
-  (Cetak Notifikasi Dapur)
+  (Lihat Pesanan Baru)
+  (Tandai Pesanan Selesai)
+  (Lihat Semua Pesanan)
   (Generate Laporan Penjualan Bulanan)
-  (Ekspor Laporan ke Excel)
 }
 
-' Relasi Utama
+' Login untuk semua role
+Customer -- (Login)
+Kitchen -- (Login)
+Admin -- (Login)
+
+' Pelanggan
 Customer -- (Lihat Menu Online)
-Customer -- (Cari Menu Berdasarkan Kategori)
-Customer -- (Lihat Detail Menu)
 Customer -- (Pesan Makanan)
 Customer -- (Lihat Riwayat Pesanan)
 
-' Include (wajib)
 (Pesan Makanan) .> (Input Nomor Meja) : <<include>>
-(Input Nomor Meja) .> (Validasi Nomor Meja) : <<include>>
 (Pesan Makanan) .> (Hitung Total Pesanan) : <<include>>
-
-' Extend (opsional/kondisional)
 (Pesan Makanan) .> (Tambah Catatan Khusus) : <<extend>>
-(Pesan Makanan) .> (Terapkan Promo/Voucher) : <<extend>>
-(Bayar Pesanan) .> (Kirim Notifikasi ke Dapur) : <<extend>>
-(Kirim Notifikasi ke Dapur) .> (Cetak Notifikasi Dapur) : <<include>>
+(Pesan Makanan) .> (Terapkan Promo) : <<extend>>
+(Pesan Makanan) --> (Bayar Pesanan)
 
-' Aktor lain
-Customer -- (Bayar Pesanan)
-(Bayar Pesanan) --> PaymentGateway : menggunakan
-PaymentGateway --> (Bayar Pesanan)
+' Dapur
+Kitchen -- (Lihat Pesanan Baru)
+Kitchen -- (Tandai Pesanan Selesai)
+Kitchen -- (Lihat Semua Pesanan)
 
-Kitchen -- (Perbarui Status Pesanan)
-Kitchen -- (Kirim Notifikasi ke Dapur)
-
+' Admin
 Admin -- (Generate Laporan Penjualan Bulanan)
-(Generate Laporan Penjualan Bulanan) .> (Ekspor Laporan ke Excel) : <<include>>
 
-' Catatan: Notifikasi hanya dikirim jika pembayaran sukses
+' Catatan
 note right of (Bayar Pesanan)
-  Notifikasi ke dapur hanya
-  dikirim jika pembayaran
-  berhasil diverifikasi.
+  Setelah pembayaran sukses,
+  status pesanan otomatis
+  berubah menjadi IN_KITCHEN
+  dan muncul di menu dapur.
 end note
 @enduml

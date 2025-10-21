@@ -1,50 +1,14 @@
 @startuml
-' Gaya tampilan
 skinparam classAttributeIconSize 0
 skinparam class {
   BackgroundColor LightYellow
   BorderColor DarkOrange
 }
 
-class Customer {
-  - customerId: String
-  - currentTable: String
-  + viewMenu(): List<MenuItem>
-  + placeOrder(items: List<OrderItem>, table: String): Order
-  + viewOrderHistory(): List<Order>
-}
-
-class MenuItem {
-  - menuId: String
-  - name: String
-  - description: String
-  - price: Double
-  - category: String
-  - isAvailable: Boolean
-  + getDetails(): String
-}
-
-class OrderItem {
-  - menuItem: MenuItem
-  - quantity: Integer
-  - specialNotes: String
-  + calculateSubtotal(): Double
-}
-
-class Order {
-  - orderId: String
-  - tableNumber: String
-  - orderTime: LocalDateTime
-  - status: OrderStatus
-  - items: List<OrderItem>
-  - promoApplied: PromoCode
-  - totalAmount: Double
-  + addItem(item: OrderItem)
-  + removeItem(item: OrderItem)
-  + applyPromo(promo: PromoCode)
-  + calculateTotal(): Double
-  + pay(paymentMethod: String): Boolean
-  + cancel(): Boolean
+enum UserRole {
+  CUSTOMER
+  KITCHEN
+  ADMIN
 }
 
 enum OrderStatus {
@@ -56,64 +20,59 @@ enum OrderStatus {
   CANCELLED
 }
 
+class User {
+  - user_id: String
+  - username: String
+  - password: String
+  - role: UserRole
+}
+
+class MenuItem {
+  - menu_id: String
+  - name: String
+  - price: Double
+  - category: String
+  - is_available: Boolean
+}
+
+class OrderItem {
+  - menu_item: MenuItem
+  - quantity: Integer
+  - special_notes: String
+  + subtotal(): Double
+}
+
+class Order {
+  - order_id: String
+  - table_number: String
+  - customer_id: String
+  - order_time: LocalDateTime
+  - status: OrderStatus
+  - items: List<OrderItem>
+  - total_amount: Double
+  + add_item(item: OrderItem)
+  + calculate_total(): Double
+  + pay(): Boolean
+}
+
 class PromoCode {
   - code: String
-  - discountType: String  // "PERCENT" atau "FIXED"
+  - discount_type: String
   - value: Double
-  - minOrderAmount: Double
-  - isActive: Boolean
-  + isValid(orderTotal: Double): Boolean
-}
-
-class Payment {
-  - paymentId: String
-  - orderId: String
-  - amount: Double
-  - method: String  // "QRIS", "CASH", "EWALLET"
-  - timestamp: LocalDateTime
-  - externalRef: String
-  - isSuccessful: Boolean
-  + verify(): Boolean
-}
-
-class KitchenNotification {
-  - notificationId: String
-  - orderId: String
-  - items: List<OrderItem>
-  - timestamp: LocalDateTime
-  - printed: Boolean
-  + sendToKitchen()
-  + markAsPrinted()
-}
-
-class SalesReport {
-  - reportId: String
-  - month: YearMonth
-  - totalOrders: Integer
-  - totalRevenue: Double
-  - topSellingItems: List<MenuItem>
-  + generate(orders: List<Order>)
-  + exportToExcel(): File
+  - min_order: Double
+  + is_valid(order_total: Double): Boolean
 }
 
 ' --- Relasi ---
-Customer "1" -- "0..*" Order : places >
+User "1" -- "0..*" Order : places >
 Order "1" -- "1..*" OrderItem : contains >
-Order "1" -- "0..1" PromoCode : uses >
-Order "1" -- "1" Payment : has >
-MenuItem "1" -- "1..*" OrderItem : used in >
-Order "1" -- "1" KitchenNotification : triggers >
-SalesReport "1" -- "*" Order : aggregates >
+OrderItem "1" -- "1" MenuItem : refers to >
+Order "0..1" -- "0..1" PromoCode : uses >
 
-' Catatan
 note top of Order
-  Status berubah otomatis:
-  PENDING → PAID → IN_KITCHEN → READY → COMPLETED
-end note
-
-note right of Payment
-  Integrasi dengan
-  gateway eksternal
-  (misal: Midtrans, Xendit)
+  Setelah order.pay(),
+  status langsung diubah
+  menjadi IN_KITCHEN
+  di source code.
 end note
 @enduml
